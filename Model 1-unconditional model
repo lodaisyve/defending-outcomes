@@ -1,0 +1,60 @@
+TITLE:unconditional model
+
+DATA: 
+FILE IS t2t3.dat;
+
+VARIABLE:
+
+  NAMES =  newid clasid 
+  clasiz prog 
+  massd maggd mcomv mrepo mtacd
+  mpop mlika
+  t2age gender
+  t2assd t2aggd t2comv t2repo t2tacd
+  t2likp t2popp
+  t2vic  t2dep
+  t3vic  t3dep
+  t2bu_po
+  ;
+
+
+
+USEVARIABLES = t3vic t3dep clasid;
+
+!missing = all (999);
+CLUSTER = clasid;
+
+WITHIN = ;
+
+BETWEEN = ;
+
+
+
+ANALYSIS:
+  TYPE = TWOLEVEL random;
+  ESTIMATOR = BAYES;
+  BITERATIONS = 50000(10000);
+  THIN = 20;
+  PROCESSORS = 2;
+  CHAINS = 3;
+  ALGORITHM=GIBBS(RW);
+
+  
+MODEL:
+%WITHIN%
+t3vic (w1) 
+t3dep (w2);
+
+%BETWEEN%
+
+t3vic(b1)
+ t3dep (b2);
+ 
+ Model Constraint: 
+ NEW (iccvic iccdep);
+ iccvic = b1/(b1+W1);
+ iccdep = b2/(b2+w2);
+ 
+  PLOT:       TYPE = PLOT2;
+
+  OUTPUT:     STDYX SVALUES;
