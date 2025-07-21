@@ -1,0 +1,101 @@
+TITLE:individual-level model 
+
+DATA: 
+FILE IS t2t3.dat;
+
+VARIABLE:
+ NAMES =  newid clasid clasiz prog
+  massd maggd mcomv mrepo mtacd
+  mpop mlika
+  t2age gender
+  t2assd t2aggd t2comv t2repo t2tacd
+  t2likp t2popp
+  t2vic  t2dep
+  t3vic  t3dep
+  t2bu_po;
+
+
+  
+USEVARIABLES = t2age gender t2assd 
+t2aggd t2comv t2repo t2tacd
+t2likp t2popp t2vic t3vic
+t2dep t3dep
+gasli gaspo;
+
+
+
+CLUSTER = clasid;
+
+WITHIN = t2age gender t2assd 
+t2aggd t2comv t2repo t2tacd
+t2likp t2popp t2vic t2dep
+gasli gaspo;
+
+BETWEEN = ;
+
+DEFINE: CENTER t2age gender t2assd 
+t2aggd t2comv t2repo t2tacd
+t2likp t2popp t2vic t2dep (GROUPMEAN);
+
+!center   (grandmean);
+
+
+gasli = (t2assd-massd)*(t2likp-mlika);
+gaspo = (t2assd-massd)*(t2popp-mpop);
+
+ANALYSIS: 
+  TYPE = TWOLEVEL random;
+  ESTIMATOR = BAYES;
+  BITERATIONS = 50000(10000);
+  THIN = 20;
+  PROCESSORS = 2;
+  CHAINS = 3;
+  ALGORITHM=GIBBS(RW);
+
+MODEL:
+%WITHIN%
+t3vic  ON t2age gender
+t2assd 
+t2aggd t2comv t2repo t2tacd
+t2likp 
+t2popp t2vic t2dep 
+gasli 
+gaspo;
+
+t3dep ON t2age gender
+t2assd (b1)
+t2aggd t2comv t2repo t2tacd
+t2likp (b2)
+t2popp t2vic t2dep 
+gasli (b3)
+gaspo;
+
+
+
+t3vic 
+t3dep (b0);
+
+t2vic WITH t2dep;
+
+%BETWEEN%
+[t3vic];
+t3vic;
+[t3dep];
+t3dep;
+
+model constraint:
+new (Llik Hlik LLlik HLlik LHlik HHlik);
+
+Llik = b1-b3*0.039419;
+Hlik = b1+b3*0.039419;
+
+LLlik = (b1-b3*0.039419)*(0-0.972117)+ b0 - b2 * 0.039419;
+HLlik = (b1-b3*0.039419)*(0+0.972117)+ b0 - b2 * 0.039419;
+LHlik = (b1+b3*0.039419)*(0-0.972117)+ b0 + b2 * 0.039419;
+HHlik = (b1+b3*0.039419)*(0+0.972117)+ b0 + b2 * 0.039419;
+
+
+
+  PLOT:       TYPE = PLOT2;
+
+  OUTPUT:     STDYX SVALUES;
