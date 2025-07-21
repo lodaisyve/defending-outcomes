@@ -62,19 +62,13 @@ t2vic WITH t2dep;
 
 s1|t3vic ON t2assd;
 s2|t3dep ON t2assd;
-!s3|t3vic ON t2popp ;
 
 %BETWEEN%
 
 s1;
 s2;
-!s3;
 
 
-!t3vic with s1 s2 ;
-!t3dep with s1 s2;
-!s1 with s2  ;
-!s2 with s3 ;
 
 
 [t3vic];
